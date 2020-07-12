@@ -63,7 +63,7 @@ class TransformerEncoder(nn.Module):
 
     def __init__(self, encoder_layer, num_layers, norm=None):
         super().__init__()
-        self.layers = _get_clones(encoder_layer, num_layers)
+        self.layers = nn.ModuleList([copy.deepcopy(encoder_layer) for i in range(num_layers)])
         self.num_layers = num_layers
         self.norm = norm
 
@@ -87,7 +87,7 @@ class TransformerDecoder(nn.Module):
 
     def __init__(self, decoder_layer, num_layers, norm=None, return_intermediate=False):
         super().__init__()
-        self.layers = _get_clones(decoder_layer, num_layers)
+        self.layers = nn.ModuleList([copy.deepcopy(decoder_layer) for i in range(num_layers)])
         self.num_layers = num_layers
         self.norm = norm
         self.return_intermediate = return_intermediate
@@ -268,22 +268,6 @@ class TransformerDecoderLayer(nn.Module):
         return self.forward_post(tgt, memory, tgt_mask, memory_mask,
                                  tgt_key_padding_mask, memory_key_padding_mask, pos, query_pos)
 
-
-def _get_clones(module, N):
-    return nn.ModuleList([copy.deepcopy(module) for i in range(N)])
-
-
-def build_transformer(args):
-    return Transformer(
-        d_model=args.hidden_dim,
-        dropout=args.dropout,
-        nhead=args.nheads,
-        dim_feedforward=args.dim_feedforward,
-        num_encoder_layers=args.enc_layers,
-        num_decoder_layers=args.dec_layers,
-        normalize_before=args.pre_norm,
-        return_intermediate_dec=True,
-    )
 
 
 def _get_activation_fn(activation):
